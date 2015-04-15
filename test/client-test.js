@@ -94,18 +94,18 @@ var fs = require('fs'),
       });
     });
 
-    
+
     it('should allow passing in XML strings', function (done) {
       soap.createClient(__dirname + '/wsdl/default_namespace.wsdl', _.assign({ envelopeKey: 'soapenv' }, meta.options), function (err, client) {
         assert.ok(client);
         assert.ifError(err);
-        
+
         var xmlStr = '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">\n\t<head>\n\t\t<title>404 - Not Found</title>\n\t</head>\n\t<body>\n\t\t<h1>404 - Not Found</h1>\n\t\t<script type="text/javascript" src="http://gp1.wpc.edgecastcdn.net/00222B/beluga/pilot_rtm/beluga_beacon.js"></script>\n\t</body>\n</html>';
         client.MyOperation({_xml: xmlStr}, function (err, result, raw, soapHeader) {
-            assert.ok(err);
-            assert.notEqual(raw.indexOf('html'), -1);
-            done();
-          });
+          assert.ok(err);
+          assert.notEqual(raw.indexOf('html'), -1);
+          done();
+        });
       });
     });
 
@@ -210,27 +210,27 @@ var fs = require('fs'),
         }, 'https://127.0.0.1:443');
       });
 
-      
+
       it('should have xml request modified', function (done) {
-          soap.createClient(__dirname + '/wsdl/default_namespace.wsdl', meta.options, function(err, client) {
-              assert.ok(client);
-              assert.ifError(err);
+        soap.createClient(__dirname + '/wsdl/default_namespace.wsdl', meta.options, function(err, client) {
+          assert.ok(client);
+          assert.ifError(err);
 
-              client.MyOperation({}, function(err, result) {
-                      assert.ok(result);
-                      assert.ok(client.lastResponse);
-                      assert.ok(client.lastResponseHeaders);
+          client.MyOperation({}, function(err, result) {
+              assert.ok(result);
+              assert.ok(client.lastResponse);
+              assert.ok(client.lastResponseHeaders);
 
-                      done();
-                    }, {
-                  postProcess: function(_xml) {
-                          return _xml.replace('soap', 'SOAP');
-                        }
-                }
-              );
-            }, baseUrl);
-        });
-      
+              done();
+            }, {
+              postProcess: function(_xml) {
+                return _xml.replace('soap', 'SOAP');
+              }
+            }
+          );
+        }, baseUrl);
+      });
+
       it('should have the correct extra header in the request', function (done) {
         soap.createClient(__dirname + '/wsdl/default_namespace.wsdl', meta.options, function (err, client) {
           assert.ok(client);
@@ -474,6 +474,70 @@ var fs = require('fs'),
         done();
       });
     });
+
+   describe('security as an array',function(done){
+     var soapClient;
+     before(function(done){
+       soap.createClient(__dirname+'/wsdl/default_namespace.wsdl', function(err, client) {
+         soapClient=client;
+
+         done();
+       });
+     });
+     it('security should be  an array',function(){
+       Array.isArray( soapClient.security).should.be.equal(true)
+     });
+     it('security should contain the security methods passed',function(){
+       var sec={
+         toXML:function(){
+           return '<sexuredHeader></securedHeader>'
+         }
+       };
+
+       soapClient.setSecurity(sec);
+
+       soapClient.security.length.should.equal(1);
+       soapClient.security[0].should.be.equal(sec)
+     });
+
+     it('security should set some content',function(){
+       var sec={
+         toXML:function(){
+           return '<securedHeader></securedHeader>'
+         }
+       };
+       var sec1={
+         toXML:function(){
+           return '<securedHeader1></securedHeader1>'
+         },
+         addOptions:function(options){
+           options.ssl=true;
+           options.ftp=false;
+           return options;
+         }
+       };
+       var sec2={
+         addOptions:function(options){
+           options.ftp=true;
+           options.ssh=true;
+           return options;
+         },
+         addHeaders:function(headers){
+           headers.something='out of text';
+           return headers;
+         }
+       };
+
+       soapClient.setSecurity(sec,sec1,sec2);
+       soapClient.security.length.should.equal(3);
+       soapClient.securityXML.should.equal('<securedHeader></securedHeader><securedHeader1></securedHeader1>');
+       soapClient.securityHeaders.should.have.ownProperty('something');
+       soapClient.securityOptions.should.have.ownProperty('ftp');
+       soapClient.securityOptions.ftp.should.equal(true);
+
+     });
+
+   });
 
     describe('Namespace number', function () {
       var server = null;
@@ -987,15 +1051,15 @@ var fs = require('fs'),
         });
       });
     });
-    
+
     describe('Client created with createClientAsync', function () {
       it('should error on invalid host', function (done) {
         soap.createClientAsync('http://localhost:1', meta.options)
-        .then(function (client) {})
-        .catch(function (err) {
-          assert.ok(err);
-          done();
-        });
+          .then(function (client) {})
+          .catch(function (err) {
+            assert.ok(err);
+            done();
+          });
       });
 
       it('should add and clear soap headers', function (done) {
@@ -1043,7 +1107,7 @@ var fs = require('fs'),
             done();
           });
       });
-      
+
       it('should allow customization of request for http client', function (done) {
         var myRequest = function () {
         };
@@ -1058,11 +1122,11 @@ var fs = require('fs'),
 
       it('should set binding style to "document" by default if not explicitly set in WSDL, per SOAP spec', function (done) {
         soap.createClientAsync(__dirname + '/wsdl/binding_document.wsdl', meta.options)
-        .then(function (client) {
-          assert.ok(client);
-          assert.ok(client.wsdl.definitions.bindings.mySoapBinding.style === 'document');
-          done();
-        });
+          .then(function (client) {
+            assert.ok(client);
+            assert.ok(client.wsdl.definitions.bindings.mySoapBinding.style === 'document');
+            done();
+          });
       });
 
       it('should allow passing in XML strings', function (done) {
@@ -1081,73 +1145,73 @@ var fs = require('fs'),
       it('should allow customization of envelope', function (done) {
         var client;
         soap.createClientAsync(__dirname + '/wsdl/default_namespace.wsdl', _.assign({ envelopeKey: 'soapenv' }, meta.options))
-        .then(function (createdClient) {
-          assert.ok(createdClient);
-          client = createdClient;
-          return client.MyOperationAsync({});
-        })
-        .then(function (response) {})
-        .catch(function (err) {
-          assert.notEqual(client.lastRequest.indexOf('xmlns:soapenv='), -1);
-          done();
-        });
+          .then(function (createdClient) {
+            assert.ok(createdClient);
+            client = createdClient;
+            return client.MyOperationAsync({});
+          })
+          .then(function (response) {})
+          .catch(function (err) {
+            assert.notEqual(client.lastRequest.indexOf('xmlns:soapenv='), -1);
+            done();
+          });
       });
 
       it('should add soap headers', function (done) {
         soap.createClientAsync(__dirname + '/wsdl/default_namespace.wsdl', meta.options)
-        .then(function (client) {
-          assert.ok(client);
-          assert.ok(!client.getSoapHeaders().length);
-          var soapheader = {
-            'esnext': false,
-            'moz': true,
-            'boss': true,
-            'node': true,
-            'validthis': true,
-            'globals': {
-              'EventEmitter': true,
-              'Promise': true
-            }
-          };
+          .then(function (client) {
+            assert.ok(client);
+            assert.ok(!client.getSoapHeaders().length);
+            var soapheader = {
+              'esnext': false,
+              'moz': true,
+              'boss': true,
+              'node': true,
+              'validthis': true,
+              'globals': {
+                'EventEmitter': true,
+                'Promise': true
+              }
+            };
 
-          client.addSoapHeader(soapheader);
+            client.addSoapHeader(soapheader);
 
-          assert.ok(client.getSoapHeaders()[0] === '<esnext>false</esnext><moz>true</moz><boss>true</boss><node>true</node><validthis>true</validthis><globals><EventEmitter>true</EventEmitter><Promise>true</Promise></globals>');
-          done();
-        });
+            assert.ok(client.getSoapHeaders()[0] === '<esnext>false</esnext><moz>true</moz><boss>true</boss><node>true</node><validthis>true</validthis><globals><EventEmitter>true</EventEmitter><Promise>true</Promise></globals>');
+            done();
+          });
       });
 
       it('should allow disabling the wsdl cache', function (done) {
         var spy = sinon.spy(wsdl, 'open_wsdl');
         var options = _.assign({ disableCache: true }, meta.options);
         soap.createClientAsync(__dirname + '/wsdl/binding_document.wsdl', options)
-        .then(function (client) {
-          assert.ok(client);
-          return soap.createClientAsync(__dirname + '/wsdl/binding_document.wsdl', options);
-        })
-        .then(function (client) {
-          assert.ok(client);
-          assert.ok(spy.calledTwice);
-          wsdl.open_wsdl.restore();
-          done();
-        });
+          .then(function (client) {
+            assert.ok(client);
+            return soap.createClientAsync(__dirname + '/wsdl/binding_document.wsdl', options);
+          })
+          .then(function (client) {
+            assert.ok(client);
+            assert.ok(spy.calledTwice);
+            wsdl.open_wsdl.restore();
+            done();
+          });
       });
 
       it('should add http headers', function (done) {
         soap.createClientAsync(__dirname + '/wsdl/default_namespace.wsdl', meta.options)
-        .then(function (client) {
-          assert.ok(client);
-          assert.ok(!client.getHttpHeaders());
+          .then(function (client) {
+            assert.ok(client);
+            assert.ok(!client.getHttpHeaders());
 
-          client.addHttpHeader('foo', 'bar');
+            client.addHttpHeader('foo', 'bar');
 
-          assert.ok(client.getHttpHeaders());
-          assert.equal(client.getHttpHeaders().foo, 'bar');
+            assert.ok(client.getHttpHeaders());
+            assert.equal(client.getHttpHeaders().foo, 'bar');
 
-          client.clearHttpHeaders();
-          assert.equal(Object.keys(client.getHttpHeaders()).length, 0);
-          done();
-        });
+            client.clearHttpHeaders();
+            assert.equal(Object.keys(client.getHttpHeaders()).length, 0);
+            done();
+          });
       });
 
     });
