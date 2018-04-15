@@ -23,7 +23,7 @@ var fs = require('fs'),
     it('should add and clear soap headers', function (done) {
       soap.createClient(__dirname + '/wsdl/default_namespace.wsdl', meta.options, function (err, client) {
         assert.ok(client);
-        assert.ok(!client.getSoapHeaders());
+        assert.ok(!client.getSoapHeaders().length);
 
         var i1 = client.addSoapHeader('about-to-change-1');
         var i2 = client.addSoapHeader('about-to-change-2');
@@ -38,7 +38,7 @@ var fs = require('fs'),
         assert.ok(client.getSoapHeaders()[1] === 'header2');
 
         client.clearSoapHeaders();
-        assert.ok(!client.getSoapHeaders());
+        assert.ok(!client.getSoapHeaders().length);
         done();
       });
     });
@@ -423,7 +423,7 @@ var fs = require('fs'),
     it('should add soap headers', function (done) {
       soap.createClient(__dirname + '/wsdl/default_namespace.wsdl', meta.options, function (err, client) {
         assert.ok(client);
-        assert.ok(!client.getSoapHeaders());
+        assert.ok(!client.getSoapHeaders().length);
         var soapheader = {
           'esnext': false,
           'moz': true,
@@ -446,7 +446,7 @@ var fs = require('fs'),
     it('should add soap headers with a namespace', function (done) {
       soap.createClient(__dirname + '/wsdl/default_namespace.wsdl', meta.options, function (err, client) {
         assert.ok(client);
-        assert.ok(!client.getSoapHeaders());
+        assert.ok(!client.getSoapHeaders().length);
 
         client.addSoapHeader({ header1: 'content' }, null, null, 'http://example.com');
 
@@ -454,7 +454,7 @@ var fs = require('fs'),
         assert.ok(client.getSoapHeaders()[0] === '<header1 xmlns="http://example.com">content</header1>');
 
         client.clearSoapHeaders();
-        assert.ok(!client.getSoapHeaders());
+        assert.ok(!client.getSoapHeaders().length);
         done();
       });
     });
@@ -1001,7 +1001,7 @@ var fs = require('fs'),
       it('should add and clear soap headers', function (done) {
         soap.createClientAsync(__dirname + '/wsdl/default_namespace.wsdl', meta.options).then(function (client) {
           assert.ok(client);
-          assert.ok(!client.getSoapHeaders());
+          assert.ok(!client.getSoapHeaders().length);
 
           var i1 = client.addSoapHeader('about-to-change-1');
           var i2 = client.addSoapHeader('about-to-change-2');
@@ -1016,7 +1016,7 @@ var fs = require('fs'),
           assert.ok(client.getSoapHeaders()[1] === 'header2');
 
           client.clearSoapHeaders();
-          assert.ok(!client.getSoapHeaders());
+          assert.ok(!client.getSoapHeaders().length);
           done();
         });
       });
@@ -1097,7 +1097,7 @@ var fs = require('fs'),
         soap.createClientAsync(__dirname + '/wsdl/default_namespace.wsdl', meta.options)
         .then(function (client) {
           assert.ok(client);
-          assert.ok(!client.getSoapHeaders());
+          assert.ok(!client.getSoapHeaders().length);
           var soapheader = {
             'esnext': false,
             'moz': true,
